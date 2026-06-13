@@ -1,16 +1,25 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useAuth } from "@/context/AuthContext";
 
 export default function LoginPage() {
+  const { user, loading: authLoading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+
+  // Redirect ke dashboard jika sudah login
+  useEffect(() => {
+    if (!authLoading && user) {
+      router.push("/dashboard");
+    }
+  }, [user, authLoading, router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,6 +48,22 @@ export default function LoginPage() {
       setLoading(false);
     }
   };
+
+  // Jangan tampilkan form login jika sedang cek auth atau sudah login
+  if (authLoading) {
+    return (
+      <div className="relative min-h-screen flex items-center justify-center px-4 overflow-hidden bg-gradient-to-br from-blue-50 via-white to-blue-100">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-10 w-10 rounded-full border-4 border-blue-600 border-t-transparent animate-spin" />
+          <p className="text-slate-500 text-sm">Memeriksa sesi...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (user) {
+    return null; // Akan redirect oleh useEffect
+  }
 
   return (
     <div className="relative min-h-screen flex items-center justify-center px-4 overflow-hidden bg-gradient-to-br from-blue-50 via-white to-blue-100">

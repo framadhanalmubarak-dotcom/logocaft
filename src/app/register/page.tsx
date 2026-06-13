@@ -1,37 +1,83 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createUserWithEmailAndPassword, updateProfile, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
-import { doc, setDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useAuth } from "@/context/AuthContext";
+import { doc, setDoc } from "firebase/firestore";
 
 export default function RegisterPage() {
+  const { user, loading: authLoading } = useAuth();
   const [nama, setNama] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+
+  // Redirect ke dashboard jika sudah login
+  useEffect(() => {
+    if (!authLoading && user) {
+      router.push("/dashboard");
+    }
+  }, [user, authLoading, router]);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
+
+    if (password !== confirmPassword) {
+      setError("Password dan konfirmasi password tidak cocok!");
+      setLoading(false);
+      return;
+    }
+
+    if (password.length < 6) {
+      setError("Password minimal 6 karakter!");
+      setLoading(false);
+      return;
+    }
+
     try {
-      const result = await createUserWithEmailAndPassword(auth, email, password);
-      await updateProfile(result.user, { displayName: nama });
-      await setDoc(doc(db, "users", result.user.uid), {
-        nama,
-        email,
+      // Buat user di Firebase Auth
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Update profil dengan nama
+      await updateProfile(user, {
+        displayName: nama,
+      });
+
+      // Simpan data user ke Firestore
+      await setDoc(doc(db, "users", user.uid), {
+        nama: nama,
+        email: email,
         createdAt: new Date(),
         materiSelesai: 0,
+        materiSelesaiList: [],
         videoDitonton: 0,
+        videoDitontonList: [],
         jumlahKarya: 0,
       });
+
       router.push("/dashboard");
-    } catch {
-      setError("Gagal daftar. Pastikan email valid dan password minimal 6 karakter.");
+    } catch (err: unknown) {
+      console.error(err);
+      if (err && typeof err === "object" && "code" in err) {
+        const error = err as { code: string };
+        if (error.code === "auth/email-already-in-use") {
+          setError("Email sudah terdaftar. Silakan login.");
+        } else if (error.code === "auth/weak-password") {
+          setError("Password terlalu lemah. Minimal 6 karakter.");
+        } else {
+          setError("Gagal mendaftar. Coba lagi!");
+        }
+      } else {
+        setError("Gagal mendaftar. Coba lagi!");
+      }
     } finally {
       setLoading(false);
     }
@@ -43,14 +89,21 @@ export default function RegisterPage() {
     try {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
-      await setDoc(doc(db, "users", result.user.uid), {
-        nama: result.user.displayName,
-        email: result.user.email,
+      const user = result.user;
+
+      // Cek apakah user sudah ada di Firestore
+      const userRef = doc(db, "users", user.uid);
+      await setDoc(userRef, {
+        nama: user.displayName || "",
+        email: user.email || "",
         createdAt: new Date(),
         materiSelesai: 0,
+        materiSelesaiList: [],
         videoDitonton: 0,
+        videoDitontonList: [],
         jumlahKarya: 0,
       }, { merge: true });
+
       router.push("/dashboard");
     } catch {
       setError("Login Google gagal. Coba lagi!");
@@ -59,21 +112,37 @@ export default function RegisterPage() {
     }
   };
 
+  // Jangan tampilkan form register jika sedang cek auth atau sudah login
+  if (authLoading) {
+    return (
+      <div className="relative min-h-screen flex items-center justify-center px-4 overflow-hidden bg-gradient-to-br from-blue-50 via-white to-blue-100">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-10 w-10 rounded-full border-4 border-blue-600 border-t-transparent animate-spin" />
+          <p className="text-slate-500 text-sm">Memeriksa sesi...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (user) {
+    return null; // Akan redirect oleh useEffect
+  }
+
   return (
-    <div className="relative min-h-screen flex items-center justify-center px-4 overflow-hidden bg-gradient-to-br from-blue-50 via-white to-indigo-100">
+    <div className="relative min-h-screen flex items-center justify-center px-4 overflow-hidden bg-gradient-to-br from-blue-50 via-white to-blue-100">
 
       {/* GRID */}
       <div className="absolute inset-0 opacity-[0.04] grid-background" />
 
-      {/* BLUR CIRCLE */}
-      <div className="absolute top-[-150px] left-[-100px] w-[500px] h-[500px] bg-indigo-300/30 rounded-full blur-3xl" />
-
-      <div className="absolute top-20 right-0 w-[500px] h-[500px] bg-blue-300/20 rounded-full blur-3xl" />
-
-      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[350px] h-[350px] bg-purple-300/20 rounded-full blur-3xl" />
+      {/* BLUR CIRCLES */}
+      <div className="absolute top-[-150px] left-[-100px] w-[500px] h-[500px] bg-blue-300/30 rounded-full blur-3xl" />
+      <div className="absolute top-20 right-0 w-[500px] h-[500px] bg-blue-400/20 rounded-full blur-3xl" />
+      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[350px] h-[350px] bg-indigo-300/20 rounded-full blur-3xl" />
 
       {/* REGISTER CARD */}
       <div className="relative z-10 w-full max-w-md bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/50 p-10">
+
+        {/* Logo */}
         <div className="flex items-center gap-2 mb-8">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600 text-white font-black text-sm">
             LC
@@ -84,7 +153,7 @@ export default function RegisterPage() {
         </div>
 
         <h1 className="text-3xl font-bold text-slate-900 mb-1">Daftar</h1>
-        <p className="text-slate-500 mb-8">Mulai perjalanan belajar desain logo!</p>
+        <p className="text-slate-500 mb-8">Mulai perjalanan desain logo Anda!</p>
 
         {error && (
           <div className="mb-4 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-600">
@@ -99,7 +168,7 @@ export default function RegisterPage() {
               type="text"
               value={nama}
               onChange={(e) => setNama(e.target.value)}
-              placeholder="Nama kamu"
+              placeholder="Masukkan nama lengkap"
               required
               className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
             />
@@ -123,6 +192,19 @@ export default function RegisterPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              required
+              className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            />
+            <p className="text-xs text-slate-400 mt-1">Minimal 6 karakter</p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Konfirmasi Password</label>
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="••••••••"
               required
               className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"

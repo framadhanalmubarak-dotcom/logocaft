@@ -160,22 +160,6 @@ export default function UploadPage() {
                     <p className="text-xs text-slate-500">Hanya kamu yang bisa lihat</p>
                   </div>
                 </label>
-
-                <label className={`flex-1 flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition ${tampilkan === "galeri" ? "border-blue-600 bg-blue-50" : "border-slate-200 hover:border-slate-300"
-                  }`}>
-                  <input
-                    type="radio"
-                    name="tampilkan"
-                    value="galeri"
-                    checked={tampilkan === "galeri"}
-                    onChange={() => setTampilkan("galeri")}
-                    className="accent-blue-600"
-                  />
-                  <div>
-                    <p className="font-semibold text-slate-800 text-sm">🌐 Galeri Karya</p>
-                    <p className="text-xs text-slate-500">Semua orang bisa lihat</p>
-                  </div>
-                </label>
               </div>
             </div>
 

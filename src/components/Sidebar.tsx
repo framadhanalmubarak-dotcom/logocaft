@@ -40,15 +40,13 @@ export default function Sidebar({ activeMenu, onMenuClick, type = "dashboard" }:
    ];
 
    const portfolioMenu = [
-      { id: "galeri", label: "Galeri Karya", icon: "🖼️" },
-      { id: "portfolio", label: "Portfolio Saya", icon: "⊞" },
-      { id: "upload", label: "Upload Karya", icon: "⬆️" },
+      { id: "portfolio", label: "Portfolio Saya", icon: "🖼️", href: "/portfolio" },
+      { id: "upload", label: "Upload Karya", icon: "⬆️", href: "/upload" },
    ];
 
    return (
       <aside className="hidden lg:block w-72 shrink-0">
          <div className="sticky top-6 rounded-3xl overflow-hidden shadow-2xl sidebar-gradient">
-            {/* Header */}
             <div className="p-6 border-b border-white/5">
                {type === "dashboard" && (
                   <div className="flex items-center gap-3">
@@ -99,7 +97,6 @@ export default function Sidebar({ activeMenu, onMenuClick, type = "dashboard" }:
                )}
             </div>
 
-            {/* Menu Items */}
             <div className="p-3">
                {type === "dashboard" && (
                   <ul className="space-y-1">
@@ -121,12 +118,7 @@ export default function Sidebar({ activeMenu, onMenuClick, type = "dashboard" }:
                            </li>
                         );
                      })}
-
-                     {/* Divider */}
-                     <li className="my-2">
-                        <div className="h-px bg-white/5 mx-2" />
-                     </li>
-
+                     <li className="my-2"><div className="h-px bg-white/5 mx-2" /></li>
                      <li>
                         <button
                            onClick={() => { signOut(auth); router.push("/"); }}
@@ -169,11 +161,22 @@ export default function Sidebar({ activeMenu, onMenuClick, type = "dashboard" }:
                {type === "portfolio" && (
                   <ul className="space-y-1">
                      {portfolioMenu.map((item) => {
-                        const isActive = activeMenu === item.id;
+                        const isActive =
+                           (item.id === "galeri" && activeMenu === "galeri") ||
+                           (item.id === "portfolio" && activeMenu === "portfolio") ||
+                           (item.id === "upload" && pathname === "/upload");
                         return (
                            <li key={item.id}>
                               <button
-                                 onClick={() => onMenuClick?.(item.id)}
+                                 onClick={() => {
+                                    if (item.id === "upload") {
+                                       router.push("/upload");
+                                    } else if (item.id === "galeri") {
+                                       router.push("/portfolio?tab=galeri");
+                                    } else {
+                                       router.push("/portfolio");
+                                    }
+                                 }}
                                  className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-sm font-semibold transition-all ${isActive
                                     ? "bg-gradient-to-r from-purple-600 to-violet-600 text-white shadow-lg shadow-purple-600/30"
                                     : "text-slate-400 hover:text-white hover:bg-white/5"
@@ -190,7 +193,6 @@ export default function Sidebar({ activeMenu, onMenuClick, type = "dashboard" }:
                )}
             </div>
 
-            {/* Footer */}
             <div className="p-4 border-t border-white/5">
                <div className="rounded-2xl p-3 sidebar-footer-card">
                   <div className="flex items-center gap-2 mb-1">

@@ -1,5 +1,6 @@
+"use client";
 import Navbar from "@/components/Navbar";
-import Image from "next/image";
+import Hero from "@/components/Hero";
 import Link from "next/link";
 
 export default function Home() {
@@ -56,79 +57,12 @@ export default function Home() {
     { no: "5", title: "Simpan Portfolio", desc: "Simpan karya terbaikmu di portfolio pribadi.", icon: "📁" },
   ];
 
-  const stats = [
-    { value: "500+", label: "Pelajar Aktif" },
-    { value: "6", label: "Materi Lengkap" },
-    { value: "5", label: "Video Tutorial" },
-    { value: "100%", label: "Gratis" },
-  ];
-
   return (
     <>
       <Navbar />
 
-      {/* HERO */}
-      <section className="relative bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 text-white overflow-hidden">
-        {/* Background decoration */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-40 -right-40 h-96 w-96 rounded-full bg-blue-600/20 blur-3xl" />
-          <div className="absolute -bottom-40 -left-40 h-96 w-96 rounded-full bg-blue-400/10 blur-3xl" />
-        </div>
-
-        <div className="relative mx-auto flex max-w-7xl flex-col items-center px-8 py-24 lg:flex-row lg:gap-16">
-          <div className="flex-1 text-center lg:text-left">
-            <div className="inline-flex items-center gap-2 rounded-full border border-blue-400/30 bg-blue-400/10 px-4 py-2 text-sm text-blue-300 mb-8">
-              <span className="h-2 w-2 rounded-full bg-blue-400 animate-pulse" />
-              Platform Belajar Desain Logo #1
-            </div>
-
-            <h1 className="text-5xl font-black leading-tight lg:text-7xl">
-              Belajar Membuat
-              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">
-                Logo Huruf
-              </span>
-              dari Dasar
-            </h1>
-
-            <p className="mt-6 max-w-lg text-lg text-slate-300 leading-relaxed">
-              Pelajari warna, typography, komposisi, dan teknik membuat logo huruf dalam satu platform. Gratis dan mudah dipahami.
-            </p>
-
-            <div className="mt-10 flex flex-col gap-4 sm:flex-row lg:justify-start justify-center">
-              <Link href="/register" className="flex items-center justify-center gap-2 rounded-2xl bg-blue-600 px-8 py-4 text-base font-bold hover:bg-blue-500 transition shadow-lg shadow-blue-600/30">
-                Mulai Belajar Gratis →
-              </Link>
-              <Link href="/materi" className="flex items-center justify-center gap-2 rounded-2xl border-2 border-slate-600 px-8 py-4 text-base font-bold hover:border-blue-400 hover:text-blue-400 transition">
-                Lihat Materi
-              </Link>
-            </div>
-
-            {/* Stats */}
-            <div className="mt-12 grid grid-cols-4 gap-6 max-w-lg">
-              {stats.map((stat) => (
-                <div key={stat.label} className="text-center">
-                  <div className="text-2xl font-black text-white">{stat.value}</div>
-                  <div className="text-xs text-slate-400 mt-1">{stat.label}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="mt-16 flex-1 flex justify-center lg:mt-0">
-            <div className="relative">
-              <div className="absolute inset-0 rounded-3xl bg-blue-600/20 blur-2xl scale-110" />
-              <Image
-                src="/laptop-logo.png"
-                alt="Logo Design"
-                width={600}
-                height={450}
-                priority
-                className="relative rounded-2xl drop-shadow-2xl"
-              />
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* HERO - Menggunakan komponen Hero yang sudah diperbaiki */}
+      <Hero />
 
       {/* MATERI */}
       <section className="bg-white py-28">
@@ -214,7 +148,7 @@ export default function Home() {
             <p className="text-blue-100 text-lg mb-10 max-w-xl mx-auto">
               Bergabung dengan ratusan pelajar dan mulai perjalanan desain logo kamu sekarang. Gratis!
             </p>
-            <div className="flex gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/register" className="rounded-2xl bg-white px-8 py-4 text-base font-bold text-blue-600 hover:bg-blue-50 transition shadow-lg">
                 Daftar Sekarang — Gratis
               </Link>

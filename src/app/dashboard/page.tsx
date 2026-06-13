@@ -139,8 +139,8 @@ export default function DashboardPage() {
                 {stat.total && (
                   <div className="mt-3 h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
                     <div
-                      className={`h-1.5 rounded-full bg-gradient-to-r ${stat.bg} transition-transform origin-left`}
-                      style={{ transform: `scaleX(${Math.min((stat.value / stat.total) * 100, 100) / 100})` }}
+                      className={`h-1.5 rounded-full bg-gradient-to-r ${stat.bg} transition-all`}
+                      style={{ width: `${Math.min((stat.value / stat.total) * 100, 100)}%` }}
                     />
                   </div>
                 )}
